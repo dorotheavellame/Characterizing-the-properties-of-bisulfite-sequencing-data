@@ -62,7 +62,7 @@ filt = ggplot(plotDat, aes(x = RRBSmethlong, y = arraylong, col = Coverage)) +
 
 noLeg = plot_grid(nonFilt + theme(legend.position="none"),
                   filt + theme(legend.position="none"),
-                  labels = c("C","D"), ncol = 2, nrow = 1)
+                  labels = c("D","E"), ncol = 2, nrow = 1)
 legend <- get_legend(
   nonFilt + theme(legend.box.margin = margin(0, 0, 0, 12))
 )
@@ -74,31 +74,33 @@ corPlots = plot_grid(noLeg, legend, rel_widths = c(2, .3))
 load("/mnt/data1/Thea/Simulations/data/rdCorrDNAmRealSimPlot.Rdata")
 
 p1 = ggplot(data = RRBSArrayCorLinePlot$data, aes(x = covVals, y = corr, col = type)) +
-  geom_line(size = 2, col = "#F8766D", linetype = 5) +
+  geom_line(size = 2, col = "#F8766D") +
   theme_cowplot(18) +
   xlab("Read depth filter") +
   ylab("Correlation")  +
   theme(legend.title = element_blank())
 p2 = ggplot(data = RRBSArrayRMSEPlot$dat, aes(x = covVals, y = corr, col = type)) +
-  geom_line(size = 2, linetype = 5) +
+  geom_line(size = 2) +
   scale_color_manual(values = c("#1A48C4")) +
   theme_cowplot(18) +
   xlab("Read depth filter") +
-  ylab("Error") +
+  ylab("RMSE") +
   theme(legend.title = element_blank())
 
 linePlots = 
   plot_grid(rdSimCorPlot,
-            rdSimErrorPlot,
+            rdSimErrorPlot +ylab("RMSE"),
             p1,
             p2 + theme(legend.position="none"),
-            labels = c("Bi", "Bii", "Ei", "Eii"), nrow = 4, ncol = 1, axis = "lr", align = "v")
+            labels = c("Ci", "Cii", "Fi", "Fii"), nrow = 4, ncol = 1, axis = "lr", align = "v")
 
-## load violin plots
+## load violin plots and rd with extremes
+load("/mnt/data1/Thea/Simulations/data/dataForPlots/extremesPlot.Rdata")
 load("/mnt/data1/Thea/Simulations/data/dataForPlots/simulatedPrecision.Rdata")
-rightPlots = plot_grid(simulatedPrecision, corPlots, nrow = 2, labels = c("A", ""))
+topright = plot_grid(extremesPlot, simulatedPrecision, ncol = 2, labels = "AUTO", rel_widths = c(1,1.3))
+rightPlots = plot_grid(topright, corPlots, nrow = 2)
 
-pdf("/mnt/data1/Thea/Simulations/simulationImages/combo/arrayRRBSComparison.pdf", height = 11, width = 20)
+pdf("/mnt/data1/Thea/Simulations/simulationImages/combo/Figure2.pdf", height = 11, width = 20)
 plot_grid(rightPlots, linePlots, nrow = 1, rel_widths = c(1, 0.35))
 dev.off()
 
@@ -268,26 +270,8 @@ ggplot(y, aes(x = power)) +
   labs(x = "Power (%)", y = "Number of POWEREDBiSeq\ncalculations")
 dev.off()
 
-### Supplementary Figure 6 ############################
-### rPowerPlot 
-load("/mnt/data1/Thea/Simulations/data/dataForPlots/rPower.Rdata")
-pdf("/mnt/data1/Thea/Simulations/simulationImages/supplementary/rPowerPlot.pdf", height = 7, width = 8)
-ggplot(data = rPowerPlotDat, aes(x = rRange, y = power)) +
-  geom_line(size = 2) +
-  ylim(0,100) +
-  ylab("Power (%)") +
-  xlab("r") +
-  theme_cowplot(18)
-dev.off()
 
-### Supplementary Figure 7 ############################
-load("/mnt/data1/Thea/Simulations/data/dataForPlots/rMeanVarRDPlot.Rdata")  
-
-pdf("/mnt/data1/Thea/Simulations/simulationImages/supplementary/rMeanVarRDPlot.pdf", height = 6, width = 6)
-rMeanVarRDPlot
-dev.off()
-
-### Supplementary Figure 8 and 10 ############################
+### Supplementary Figure 6 and 8 ############################
 load("/mnt/data1/Thea/Simulations/data/dataForPlots/SupplementaryAccuracyVSTime.Rdata")
 library(cowplot)
 library(ggplot2)
@@ -298,7 +282,7 @@ pdf("/mnt/data1/Thea/Simulations/simulationImages/supplementary/nAccuractBoxplot
 nPropPlot + labs(x = "Number of sites")
 dev.off()
 
-### Supplementary Figure 9 ############################
+### Supplementary Figure 7 ############################
 load("/mnt/data1/Thea/Simulations/data/dataForPlots/suppOptimisePriorPlot.Rdata")
 priorPlots = plot_grid(p1,p2,p3, ncol = 1)
 

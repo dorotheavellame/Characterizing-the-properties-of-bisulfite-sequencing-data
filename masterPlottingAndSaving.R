@@ -112,7 +112,7 @@ RRBSArrayCorPlot = methylationCorPlot(longDat)
 
 covVals = seq(0, 66, 2)
 corFiltP = corFiltRMSE = c()
-corFiltPs = corFiltRMSEs = c()
+# corFiltPs = corFiltRMSEs = c()
 for (covFilterIt in covVals){
   df = longDat[which(longDat$Coverage > covFilterIt),]
   corFiltP = c(corFiltP, cor(df$arraylong, df$RRBSmethlong))
@@ -266,6 +266,38 @@ countDataPlot = ggplot(z, aes(x = rd, y = DNAmPred, fill = rd)) +
 countDataPlot
 
 save(simulatedPrecision, countDataPlot, file = "/mnt/data1/Thea/Simulations/data/dataForPlots/simulatedPrecision.Rdata")
+
+### proportion in extreme DNAm 
+load("/mnt/data1/Thea/Simulations/data/ValidationData/RRBSmergedThatCorrelate.Rdata")
+library(reshape2)
+
+## create function to calculate proportion in extremes
+inExtreme = function(rdFilt, RRBSmat, cCols = 127:251, mCols = 2:126){
+  RRBSpostFilt = apply(RRBSmat, 1, function(x){
+    x[which(x[cCols] == rdFilt)+1] = NA
+    return(x[mCols])
+  })
+  
+  meth = as.numeric(as.character(melt(RRBSpostFilt)[,3]))
+  meth = meth[complete.cases(meth)]
+  
+  lex = sum(meth<5)
+  uex = sum(meth>95)
+  
+  return((lex+uex)/length(meth)*100)
+}
+
+propInEx = sapply(seq(0,50,5), inExtreme, allOrdered)
+
+plotDat = cbind.data.frame(props = propInEx, rd = seq(0,50,5))
+
+extremesPlot = ggplot(plotDat, aes(x = rd, y = props)) +
+  geom_point() +
+  geom_line() +
+  theme_cowplot(18) +
+  labs(x= "Read depth", y = "Proportion in extremes")
+
+save(extremesPlot, file = "/mnt/data1/Thea/Simulations/data/dataForPlots/extremesPlot.Rdata")
 
 ### Figure 3 ##########################################
 ### overlapBetweenSampleCpGs 
@@ -1077,98 +1109,8 @@ ResidualsRRBSArrayPlot = ggplot(data = longDat, aes(x = cutDat, y = residuals)) 
 save(ResidualsRRBSArrayPlot, arrayRRBSDistribPlot, arrayRRBSDistribDat,
      file = "/mnt/data1/Thea/Simulations/data/dataForPlots/arrayRRBSDistribution.Rdata")
 
-### Supplementary Figure 6 ############################
-source("/mnt/data1/Thea/Simulations/RScripts/POWEREDBiSeqFunction.R")
 
-library(cowplot)
-library(ggplot2)
-
-max.samplesize<-20
-nPerm<- 10000                 # number of permutations
-max.RD<-100                 # maximum read depth
-rRange = seq(0.25, 10,0.25)
-sim1T<-matrix(data = NA, ncol = nPerm, nrow = length(rRange))         # create empty matrices for simulated data
-
-# set parameters
-n1 = n2 = 10
-meanDiff = 10
-mu=25
-# set mean DNAm values equal i.e no difference between groups
-mu1<-mu+meanDiff
-mu2<-mu
-
-rd.mu = 25
-count = 1 # rowCounter for filling sim1T
-# loop through r
-for (r in rRange){
-  for(j in 1:nPerm){
-    ## sample read depth from nbinomial distribution with given mean
-    rd1<-rnbinom(n1,r,mu=rd.mu)
-    rd2<-rnbinom(n2,r,mu=rd.mu)
-    while (sum(rd1==0)>0){
-      k<-which(rd1==0)
-      rd1[k]<-rnbinom(length(k),r,mu=rd.mu)
-    }
-    while (sum(rd2==0)>0){
-      k<-which(rd2==0)
-      rd2[k]<-rnbinom(length(k),r,mu=rd.mu)
-    }
-    ## use binomial distibution to sample from read depth number of methylated reads and calc DNAm value
-    obs1<-rep(NA, n1)
-    for(i in 1:n1){
-      obs1[i]<-rbinom(1, rd1[i], mu1/100)/rd1[i]
-    }
-    obs2<-rep(NA, n2)
-    for(i in 1:n2){
-      obs2[i]<-rbinom(1, rd2[i], mu2/100)/rd2[i]
-    }
-    
-    sim1T[count,j]<-t.test(obs1, obs2)$p.value
-  }
-  count = count + 1
-}
-
-rPowerPlotDat = data.frame(rRange, rowSums(sim1T < 0.05)/nPerm)
-colnames(rPowerPlotDat) = c("rRange", "power")
-rPowerPlotDat$power = rPowerPlotDat$power*100
-
-rPowerPlot = ggplot(data = rPowerPlotDat, aes(x = rRange, y = power)) +
-  geom_point() +
-  ylim(0,100) +
-  ylab("Power (%)") +
-  xlab("Parameter r") +
-  theme_cowplot(18)
-
-save(rRDPlot, rRDPlotDat, rPowerPlot, rPowerPlotDat,
-     file = "/mnt/data1/Thea/Simulations/data/dataForPlots/rPower.Rdata")
-
-
-### Supplementary Figure 7 ############################
-## vary mean and variance to estimate relationship with seq depth
-rCalc = function(mu, sig){r = (mu^2/sig^2)/(1-mu/sig^2); return(r)}
-
-muIn = seq(10,40,2)
-sigIn = seq(10,30,5)
-
-dat = data.frame(matrix(ncol = 3, nrow = 0))
-colnames(dat) = c("r", "mu", "sig")
-for (j in 1:length(sigIn)){
-  for (i in 1:length(muIn)){
-    dat[(j-1)*length(muIn)+i,1] = rCalc(muIn[i],sigIn[j])
-    dat[(j-1)*length(muIn)+i,2] = muIn[i]
-    dat[(j-1)*length(muIn)+i,3] = sigIn[j]
-    
-  }
-}
-
-rMeanVarRDPlot = ggplot(dat, aes(x = mu, y = r, col = as.factor(sig))) +
-  geom_line(size = 1.5) +
-  theme_cowplot() +
-  labs(x = "Mean read depth", col = "Variance")
-
-save(rMeanVarRDPlot, file = "/mnt/data1/Thea/Simulations/data/dataForPlots/rMeanVarRDPlot.Rdata")  
-
-### Supplementary Figure 8 and 10 #####################
+### Supplementary Figure 6 and 8 #####################
 ### SupplementaryAccuracyVSTime 
 load("/mnt/data1/Thea/Simulations/data/fromISCA/benchmarkingDataAll.Rdata")
 library(ggplot2)
@@ -1198,7 +1140,7 @@ rPropPlot = ggplot(rDat, aes(x = nSites, y = value, group = nSites)) +
 save(r, nProp, nPropPlot,rPropPlot, 
      file = "/mnt/data1/Thea/Simulations/data/dataForPlots/SupplementaryAccuracyVSTime.Rdata")
 
-### Supplementary Figure 9 ############################
+### Supplementary Figure 7 ############################
 ### suppOptimisePrior 
 load("/mnt/data1/Thea/Simulations/data/ValidationData/RRBSmergedThatCorrelate.Rdata")
 DNAm = allOrdered[,2:126]
