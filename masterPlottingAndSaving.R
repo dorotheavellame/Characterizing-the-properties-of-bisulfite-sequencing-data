@@ -268,34 +268,45 @@ countDataPlot
 save(simulatedPrecision, countDataPlot, file = "/mnt/data1/Thea/Simulations/data/dataForPlots/simulatedPrecision.Rdata")
 
 ### proportion in extreme DNAm 
-load("/mnt/data1/Thea/Simulations/data/ValidationData/RRBSmergedThatCorrelate.Rdata")
-library(reshape2)
+# load("/mnt/data1/Thea/Simulations/data/ValidationData/RRBSmergedThatCorrelate.Rdata")
+# 
+# RRBSmat = allOrdered
+# 
+# inExtreme = function(rdnvec, RRBSmat){
+#   methCol = RRBSmat[,rdnvec[2] +1]
+#   covCol = RRBSmat[,rdnvec[2] +126]
+#   
+#   methRd = methCol[which(covCol == rdnvec[1])]
+#   
+#   lex = sum(methRd<5)
+#   uex = sum(methRd>95)
+#   
+#   return(c(lex+uex, length(methRd)))
+# }
+# 
+# rdn = expand.grid(c(1,seq(5,50,5)), 1:125)
+# propInEx = t(apply(rdn, 1, inExtreme, RRBSmat))
+# 
+# Dat = data.frame(extreme = propInEx[,1], total = propInEx[,2], rd = rdn[,1], nSample = rdn[,2])
+# 
+# save(Dat, file = "/mnt/data1/Thea/Simulations/data/propInExtremes.Rdata")
 
-## create function to calculate proportion in extremes
-inExtreme = function(rdFilt, RRBSmat, cCols = 127:251, mCols = 2:126){
-  RRBSpostFilt = apply(RRBSmat, 1, function(x){
-    x[which(x[cCols] == rdFilt)+1] = NA
-    return(x[mCols])
-  })
-  
-  meth = as.numeric(as.character(melt(RRBSpostFilt)[,3]))
-  meth = meth[complete.cases(meth)]
-  
-  lex = sum(meth<5)
-  uex = sum(meth>95)
-  
-  return((lex+uex)/length(meth)*100)
-}
+load("/mnt/data1/Thea/Simulations/data/propInExtremes.Rdata")
 
-propInEx = sapply(seq(0,50,5), inExtreme, allOrdered)
+Dat$percentage = Dat$extreme/Dat$total*100
 
-plotDat = cbind.data.frame(props = propInEx, rd = seq(0,50,5))
+# ## stats
+# median(Dat$percentage[which(Dat$rd == 5)])
+# median(Dat$percentage[which(Dat$rd == 50)])
 
-extremesPlot = ggplot(plotDat, aes(x = rd, y = props)) +
-  geom_point() +
-  geom_line() +
+library(ggplot2)
+library(cowplot)
+
+extremesPlot = ggplot(Dat, aes(x = as.factor(rd), y = percentage, fill = as.factor(rd))) +
+  geom_boxplot() +
   theme_cowplot(18) +
-  labs(x= "Read depth", y = "Proportion in extremes")
+  theme(legend.position = "none") +
+  labs(x = "Read depth", y = "DNAm points in extreme (%)")
 
 save(extremesPlot, file = "/mnt/data1/Thea/Simulations/data/dataForPlots/extremesPlot.Rdata")
 

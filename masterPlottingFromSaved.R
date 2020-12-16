@@ -16,7 +16,7 @@ cov = ggplot(data = x, aes(x = value)) +
   theme_cowplot(18) +
   theme(legend.position = "none") +
   xlab("Read depth") +
-  ylab("Number of sites (million)")
+  ylab("Number of DNAm points (million)")
 
 x = plotMethRRBS$data
 meth = ggplot(data = x, aes(x = value)) +
@@ -24,10 +24,10 @@ meth = ggplot(data = x, aes(x = value)) +
   theme_cowplot(18) +
   theme(legend.position = "none") +
   xlab("DNAm") +
-  ylab("Number of sites (million)")
+  ylab("Number of DNAm points (million)")
 
 
-pdf("/mnt/data1/Thea/Simulations/simulationImages/combo/characterisingRRBS.pdf", height = 6, width = 12)
+pdf("/mnt/data1/Thea/Simulations/simulationImages/combo/Figure1.pdf", height = 6, width = 12)
 plot_grid(cov, meth, labels = "AUTO", nrow = 1, ncol = 2, axis = "b", align = "h")
 dev.off()
 
@@ -68,7 +68,6 @@ legend <- get_legend(
 )
 
 corPlots = plot_grid(noLeg, legend, rel_widths = c(2, .3))
-
 
 
 load("/mnt/data1/Thea/Simulations/data/rdCorrDNAmRealSimPlot.Rdata")
