@@ -210,11 +210,6 @@ load("/mnt/data1/Thea/Simulations/data/dataForPlots/powerWithPOWEREDBiSeq.Rdata"
 load("/mnt/data1/Thea/Simulations/data/dataForPlots/diffInPower1_75rd.Rdata")
 load("/mnt/data1/Thea/Simulations/data/dataForPlots/minRDPlot.Rdata")
 
-qqplots = plot_grid(NULL, RDQQFull, DNAmQQ, NULL, ncol = 4,
-                    labels = c("","Ai", "Aii", ""),
-                    axis = "l", align = "tb",
-                    rel_widths = c(0.6,1,1,0.6))
-
 qqplots = plot_grid(RDQQFull, minRDPlot, DNAmQQ, ncol = 3,
                     labels = c("Ai", "Aii", "B"),
                     axis = "l", align = "tb")
