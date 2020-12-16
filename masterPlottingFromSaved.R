@@ -122,13 +122,13 @@ wideplot = plot_grid(propRemainPlot +ylab("Proportion remaining"),
                      align = "hv",
                      labels = c("A", "C"))
 otherPlot = plot_grid(rdCorHist,
-                      rdCorColPlot,
+                      rdCorColPlot + labs(col = "DNAm\npoints\nper site"),
                       labels = c("B", "D"),
                       ncol = 1,
                       axis = "blr",
                       align = "hv")
 
-pdf("/mnt/data1/Thea/Simulations/simulationImages/combo/rdMissingness.pdf", height = 9, width = 20)
+pdf("/mnt/data1/Thea/Simulations/simulationImages/combo/Figure3.pdf", height = 9, width = 20)
 plot_grid(wideplot, otherPlot, annotationPlot,
           labels = c("","","E"),
           rel_widths = c(1.5,1,0.8),
@@ -149,7 +149,8 @@ rdPlot =
   xlab("Read depth") +
   ylab("Power (%)") +
   theme_cowplot(18) +
-  labs(col = element_blank()) 
+  scale_linetype_discrete(name = "ΔμDNAm", labels = c("0.2", "0.1", "0.05"))
+
 
 mdPlot = ggplot(mdPlot$data, aes(x = md, y = dat, linetype = group)) +
   geom_line(size = 1.5, col = "#1A48C4") +
@@ -158,7 +159,7 @@ mdPlot = ggplot(mdPlot$data, aes(x = md, y = dat, linetype = group)) +
   xlab("Mean DNAm difference") +
   ylab("Power (%)") +
   theme_cowplot(18) +
-  labs(col = element_blank())
+  scale_linetype_discrete(name = "N per\ngroup", labels = c("20", "10", "5"))
 
 muPlot = ggplot(muPlot$data, aes(x = mu/100, y = dat, linetype = group)) +
   geom_line(size = 1.5, col = "#9DC41A") +
@@ -168,7 +169,7 @@ muPlot = ggplot(muPlot$data, aes(x = mu/100, y = dat, linetype = group)) +
   xlab("Mean DNAm") +
   ylab("Power (%)") +
   theme_cowplot(18) +
-  labs(col = element_blank()) 
+  scale_linetype_discrete(name = "μRD", labels = c("50", "30", "10"))
 
 varPlot = ggplot(muPlot$data, aes(x = mu/100, y = var, linetype = group)) +
   geom_line(size = 1.5, col = "#9DC41A") +
@@ -176,7 +177,7 @@ varPlot = ggplot(muPlot$data, aes(x = mu/100, y = var, linetype = group)) +
   xlab("Mean DNAm") +
   ylab("Variance") +
   theme_cowplot(18) +
-  labs(col = element_blank()) 
+  scale_linetype_discrete(name = "μRD", labels = c("50", "30", "10")) 
 
 sampleSizePlot =
   ggplot(sampleSizePlot$data, aes(x = meanNPoss, y = power, col = balanceGroup)) +
@@ -193,7 +194,7 @@ topPlots = plot_grid(NULL, rdPlot, sampleSizePlot, NULL, labels = c("", "A", "B"
 bottomPlots = plot_grid(mdPlot, muPlot, varPlot, labels = c("C","D","E"),
                         ncol = 3, axis = "b", align = "h")
 
-pdf("/mnt/data1/Thea/Simulations/simulationImages/combo/simPlot.pdf", height = 8, width = 15)
+grDevices::cairo_pdf("/mnt/data1/Thea/Simulations/simulationImages/combo/Figure4.pdf", height = 8, width = 15)
 plot_grid(topPlots, bottomPlots, nrow = 2)
 dev.off()
 
@@ -207,20 +208,25 @@ library(reshape2)
 load("/mnt/data1/Thea/Simulations/data/dataForPlots/simQQ.Rdata")
 load("/mnt/data1/Thea/Simulations/data/dataForPlots/powerWithPOWEREDBiSeq.Rdata")
 load("/mnt/data1/Thea/Simulations/data/dataForPlots/diffInPower1_75rd.Rdata")
+load("/mnt/data1/Thea/Simulations/data/dataForPlots/minRDPlot.Rdata")
 
 qqplots = plot_grid(NULL, RDQQFull, DNAmQQ, NULL, ncol = 4,
                     labels = c("","Ai", "Aii", ""),
                     axis = "l", align = "tb",
                     rel_widths = c(0.6,1,1,0.6))
 
+qqplots = plot_grid(RDQQFull, minRDPlot, DNAmQQ, ncol = 3,
+                    labels = c("Ai", "Aii", "B"),
+                    axis = "l", align = "tb")
+
 rightplots = plot_grid(powerWithPOWEREDBiSeq + labs(col = "Samples\nneeded", shape = "Samples\nneeded"),
                        powerDiffPlot + labs(x = "Samples needed", y = "Difference in\npower (%)"), ncol = 2,
-                       labels = c("B", "C"),
+                       labels = c("C", "D"),
                        axis = "tb", align = "h", rel_widths = c(1, 0.5))
 
 
 
-pdf("/mnt/data1/Thea/Simulations/simulationImages/combo/TOOLNAMEplots.pdf", height = 7, width = 11)
+pdf("/mnt/data1/Thea/Simulations/simulationImages/combo/Figure5.pdf", height = 7, width = 11)
 plot_grid(qqplots, rightplots, ncol = 1, rel_heights = c(1, 1))
 dev.off()
 

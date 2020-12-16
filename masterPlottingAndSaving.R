@@ -296,8 +296,11 @@ load("/mnt/data1/Thea/Simulations/data/propInExtremes.Rdata")
 Dat$percentage = Dat$extreme/Dat$total*100
 
 # ## stats
-# median(Dat$percentage[which(Dat$rd == 5)])
-# median(Dat$percentage[which(Dat$rd == 50)])
+# mean(Dat$percentage[which(Dat$rd == 5)])
+# mean(Dat$percentage[which(Dat$rd == 50)])
+# sd(Dat$percentage[which(Dat$rd == 5)])
+# sd(Dat$percentage[which(Dat$rd == 50)])
+
 
 library(ggplot2)
 library(cowplot)
@@ -840,6 +843,44 @@ save(mdPlot, muPlot, rdPlot, sampleSizePlot, varPlot,
 
 
 ### Figure 5 ##########################################
+### cumulitiveOverRD
+load("/mnt/data1/Thea/Simulations/data/ValidationData/RRBSmergedThatCorrelate.Rdata")
+RRBSmat = allOrdered
+
+
+inExtreme = function(rdnvec, RRBSmat){
+  covCol = RRBSmat[,rdnvec[2] +126]
+  covRd = covCol[which(covCol >= rdnvec[1])]
+  return(c(length(covRd)))
+}
+
+rdn = expand.grid(c(1,seq(5,300,5)), 1:125)
+covOverRd = t(apply(rdn, 1, inExtreme, RRBSmat))
+
+totalPoints = t(apply(cbind(rep(0, 125), 1:125), 1, inExtreme, RRBSmat))
+tpSum = sum(totalPoints)
+
+Dat = data.frame(extreme = t(covOverRd), rd = rdn[,1], nSample = rdn[,2])
+
+plotDat = data.frame(matrix(nrow=length(c(1,seq(5,300,5))), ncol = 2))
+colnames(plotDat) = c("totOver", "rd")
+plotDat$rd = c(1,seq(5,300,5))
+for (i in 1:length(plotDat$rd)){
+  plotDat$totOver[i] = sum(Dat[which(Dat$rd == plotDat$rd[i]),"extreme"])
+}
+
+library(cowplot)
+library(ggplot2)
+
+plotDat$tot = plotDat$totOver/tpSum*100
+
+minRDPlot =
+ggplot(plotDat, aes(x = rd, y = tot))+
+  geom_line() +
+  theme_cowplot(18) +
+  labs(x = "Minimum read depth", y = "Data remaining (%)")
+save(minRDPlot, file = "/mnt/data1/Thea/Simulations/data/dataForPlots/minRDPlot.Rdata")
+
 ### simQQ 
 load("/mnt/data1/Thea/Simulations/data/ValidationData/RRBSmergedThatCorrelate.Rdata")
 RRBSMatrix = allOrdered
