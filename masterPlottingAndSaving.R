@@ -545,7 +545,7 @@ simulateData = function(n1 = 20,
   return(sim)
 }
 
-nPermUse = 100
+nPermUse = 10000
 
 ## simulate read depth changes
 rdPoss = seq(10,100,1)
@@ -673,37 +673,66 @@ sampleSizePlot =
 
 ## simulate meanDiff changes
 mdPoss = seq(1,50,0.5)
-mdS1 = mdS2 = mdS3 = matrix(ncol = length(mdPoss), nrow = nPermUse)
-
+mdS1 = mdS2 = mdS3 = mdS4 = matrix(ncol = length(mdPoss), nrow = nPermUse)
+mdS5 = mdS6 = matrix(ncol = length(mdPoss), nrow = nPermUse)
 for(mdIndex in 1:length(mdPoss)){
-  mdS1[,mdIndex] = simulateData(rd.mu = 25, nPerm = nPermUse,
-                                n1 = 20,
-                                n2 = 20,
-                                r = 1.5,
-                                mu = 25,
-                                meanDiff = mdPoss[mdIndex])
-  mdS2[,mdIndex] = simulateData(rd.mu = 25, nPerm = nPermUse,
-                                n1 = 10,
-                                n2 = 10,
-                                r = 1.5,
-                                mu = 25,
-                                meanDiff = mdPoss[mdIndex])
+mdS1[,mdIndex] = simulateData(rd.mu = 25, nPerm = nPermUse,
+                              n1 = 20,
+                              n2 = 20,
+                              r = 1.5,
+                              mu = 25,
+                              meanDiff = mdPoss[mdIndex])
+mdS2[,mdIndex] = simulateData(rd.mu = 25, nPerm = nPermUse,
+                              n1 = 10,
+                              n2 = 10,
+                              r = 1.5,
+                              mu = 25,
+                              meanDiff = mdPoss[mdIndex])
   mdS3[,mdIndex] = simulateData(rd.mu = 25, nPerm = nPermUse,
                                 n1 = 5,
                                 n2 = 5,
                                 r = 1.5,
                                 mu = 25,
                                 meanDiff = mdPoss[mdIndex])
+## final added after reviewers comments
+  mdS4[,mdIndex] = simulateData(rd.mu = 25, nPerm = nPermUse,
+                                n1 = 50,
+                                n2 = 50,
+                                r = 1.5,
+                                mu = 25,
+                                meanDiff = mdPoss[mdIndex])
+  
+  mdS5[,mdIndex] = simulateData(rd.mu = 25, nPerm = nPermUse,
+                                n1 = 100,
+                                n2 = 100,
+                                r = 1.5,
+                                mu = 25,
+                                meanDiff = mdPoss[mdIndex])
+  
+  mdS6[,mdIndex] = simulateData(rd.mu = 25, nPerm = nPermUse,
+                                n1 = 500,
+                                n2 = 500,
+                                r = 1.5,
+                                mu = 25,
+                                meanDiff = mdPoss[mdIndex])
+  
+  
 }
 
 ## reformat for plotting
 pS1 = colSums(mdS1[1:nPermUse,] < (0.05/nPermUse))/nPermUse*100
 pS2 = colSums(mdS2[1:nPermUse,] < (0.05/nPermUse))/nPermUse*100
 pS3 = colSums(mdS3[1:nPermUse,] < (0.05/nPermUse))/nPermUse*100
+pS4 = colSums(mdS4[1:nPermUse,] < (0.05/nPermUse))/nPermUse*100
+pS5 = colSums(mdS5[1:nPermUse,] < (0.05/nPermUse))/nPermUse*100
+pS6 = colSums(mdS6[1:nPermUse,] < (0.05/nPermUse))/nPermUse*100
 
-mdPlotDat = rbind.data.frame(cbind.data.frame(dat = pS1, group = "i", md = mdPoss/100),
+mdPlotDat = rbind.data.frame(cbind.data.frame(dat = pS3, group = "i", md = mdPoss/100),
                              cbind.data.frame(dat = pS2, group = "ii", md = mdPoss/100),
-                             cbind.data.frame(dat = pS3, group = "iii", md = mdPoss/100))
+                             cbind.data.frame(dat = pS1, group = "iii", md = mdPoss/100),
+                             cbind.data.frame(dat = pS4, group = "iv", md = mdPoss/100),
+                             cbind.data.frame(dat = pS5, group = "v", md = mdPoss/100),
+                             cbind.data.frame(dat = pS6, group = "vi", md = mdPoss/100))
 
 mdPlot = ggplot(mdPlotDat, aes(x = md, y = dat, col = group)) +
   geom_line(size = 1.5) +
@@ -712,8 +741,7 @@ mdPlot = ggplot(mdPlotDat, aes(x = md, y = dat, col = group)) +
   xlab("Mean DNAm difference") +
   ylab("Power (%)") +
   theme_cowplot(18) +
-  labs(col = element_blank()) +
-  scale_color_manual(values = analogous("#1A48C4"))
+  labs(col = element_blank())
 
 simulateData = function(n1 = 20,
                         n2 = 20,

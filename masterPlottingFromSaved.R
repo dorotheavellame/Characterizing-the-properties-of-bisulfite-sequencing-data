@@ -151,15 +151,23 @@ rdPlot =
   theme_cowplot(18) +
   scale_linetype_discrete(name = "ΔμDNAm", labels = c("0.2", "0.1", "0.05"))
 
+# mdPlot = ggplot(mdPlot$data, aes(x = md, y = dat, linetype = group)) +
+#   geom_line(size = 1.5, col = "#1A48C4") +
+#   ylim(0,100) +
+#   geom_hline(yintercept = 80, linetype = "dashed", colour = "red") +
+#   xlab("Mean DNAm difference") +
+#   ylab("Power (%)") +
+#   theme_cowplot(18) +
+#   scale_linetype_discrete(name = "N per\ngroup", labels = c("20", "10", "5"))
 
-mdPlot = ggplot(mdPlot$data, aes(x = md, y = dat, linetype = group)) +
-  geom_line(size = 1.5, col = "#1A48C4") +
+mdPlot = ggplot(mdPlot$data, aes(x = md, y = dat, col = group)) +
+  geom_line(size = 1.5) +
   ylim(0,100) +
   geom_hline(yintercept = 80, linetype = "dashed", colour = "red") +
   xlab("Mean DNAm difference") +
   ylab("Power (%)") +
   theme_cowplot(18) +
-  scale_linetype_discrete(name = "N per\ngroup", labels = c("20", "10", "5"))
+  scale_color_discrete(name = "N per\ngroup", labels = c("5", "10", "20", "50", "100", "500"))
 
 muPlot = ggplot(muPlot$data, aes(x = mu/100, y = dat, linetype = group)) +
   geom_line(size = 1.5, col = "#9DC41A") +
